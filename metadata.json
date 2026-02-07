@@ -1,0 +1,5 @@
+{
+  "name": "SmartGotrack",
+  "description": "A smart grocery and household expense tracker with AI-powered data entry and price comparison insights.",
+  "requestFramePermissions": []
+}
