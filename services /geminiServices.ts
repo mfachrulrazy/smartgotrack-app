@@ -2,8 +2,19 @@ import { GoogleGenAI, Type } from "@google/genai";
 import { Purchase } from '../types';
 
 const getClient = () => {
-    const apiKey = process.env.API_KEY;
+    let apiKey: string | undefined;
+    try {
+        // Access process.env.API_KEY directly. 
+        // Many bundlers (Vite, Webpack) replace this exact string at build time
+        // but do not polyfill the entire `process` object or allow dynamic access like process.env[key].
+        apiKey = process.env.API_KEY;
+    } catch (e) {
+        // Ignore ReferenceError if process is not defined in a pure browser environment
+        // In that case, apiKey remains undefined and we throw the error below.
+    }
+
     if (!apiKey) {
+        console.error("API_KEY is missing. Please set it in your environment variables.");
         throw new Error("API Key not found in environment variables");
     }
     return new GoogleGenAI({ apiKey });
@@ -73,7 +84,7 @@ export const parseShoppingInput = async (input: string): Promise<ParsedPurchaseR
         if (json.isPurchase && json.data) {
             return {
                 ...json.data,
-                confidence: 0.9 // mocked confidence
+                confidence: 0.9 
             };
         }
         
@@ -100,7 +111,7 @@ export const getChatReply = async (history: {role: string, content: string}[], m
         return result.text;
     } catch (error) {
         console.error("Chat error:", error);
-        return "I'm having trouble connecting to the server right now. Please try again.";
+        return "I'm having trouble connecting to the server right now. Please check your API key configuration.";
     }
 }
 
