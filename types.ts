@@ -34,6 +34,14 @@ export interface ChatMessage {
   pendingPurchase?: Partial<Purchase>;
 }
 
+// Minimal definition for Firebase User to avoid circular dependency on firebase imports in types
+export interface UserProfile {
+    uid: string;
+    displayName: string | null;
+    email: string | null;
+    photoURL: string | null;
+}
+
 export interface AppState {
   items: Item[];
   stores: Store[];
@@ -41,9 +49,11 @@ export interface AppState {
 }
 
 export type AppContextType = {
+  user: UserProfile | null;
   state: AppState;
   addPurchase: (purchase: Purchase) => void;
   updatePurchase: (purchase: Purchase) => void;
   getHistoryForItem: (itemId: string) => Purchase[];
   getSpendingStats: () => { total: number; trend: number; topCategory: string };
+  logout: () => Promise<void>;
 };
