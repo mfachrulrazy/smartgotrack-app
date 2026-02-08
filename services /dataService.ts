@@ -1,6 +1,8 @@
 import { Item, Purchase, Store } from '../types';
+import { db } from './firebase';
+import { collection, query, orderBy, getDocs, setDoc, doc } from 'firebase/firestore';
 
-// Mock Initial Data
+// Default Catalog Data (kept for UI consistency, not persisted per user yet)
 const INITIAL_ITEMS: Item[] = [
   { id: '1', name: 'Milk', category: 'Dairy', defaultUnit: 'gallon' },
   { id: '2', name: 'Eggs', category: 'Dairy', defaultUnit: 'dozen' },
@@ -17,49 +19,61 @@ const INITIAL_STORES: Store[] = [
   { id: 's5', name: 'Kroger' },
 ];
 
-// Generate some history
-const generateHistory = (): Purchase[] => {
-  const history: Purchase[] = [];
-  const now = new Date();
-  
-  // Add some purchases over the last 30 days
-  for (let i = 0; i < 15; i++) {
-    const daysAgo = Math.floor(Math.random() * 30);
-    const date = new Date(now.getTime() - daysAgo * 24 * 60 * 60 * 1000).toISOString();
-    const item = INITIAL_ITEMS[Math.floor(Math.random() * INITIAL_ITEMS.length)];
-    const store = INITIAL_STORES[Math.floor(Math.random() * INITIAL_STORES.length)];
-    const price = Math.round((Math.random() * 10 + 2) * 100) / 100;
-    const quantity = Math.floor(Math.random() * 3) + 1;
-
-    history.push({
-      id: `p-${Math.random().toString(36).substr(2, 9)}`,
-      itemId: item.id,
-      itemName: item.name,
-      storeId: store.id,
-      storeName: store.name,
-      date: date,
-      price: price,
-      quantity: quantity,
-      unit: item.defaultUnit,
-      total: price * quantity
+/**
+ * Fetches the user's purchase history from Firestore.
+ * Returns the purchase list + static catalog data.
+ */
+export const fetchUserData = async (userId: string) => {
+  try {
+    const purchasesRef = collection(db, "users", userId, "purchases");
+    const q = query(purchasesRef, orderBy("date", "desc"));
+    
+    const querySnapshot = await getDocs(q);
+    const purchases: Purchase[] = [];
+    
+    querySnapshot.forEach((doc) => {
+      // We assume the stored data matches the Purchase interface
+      purchases.push(doc.data() as Purchase);
     });
+
+    return {
+      items: INITIAL_ITEMS,
+      stores: INITIAL_STORES,
+      purchases: purchases
+    };
+  } catch (error) {
+    console.error("Error fetching user data:", error);
+    // Return empty purchases on error to prevent app crash
+    return {
+      items: INITIAL_ITEMS,
+      stores: INITIAL_STORES,
+      purchases: []
+    };
   }
-  
-  return history.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 };
 
-const INITIAL_PURCHASES = generateHistory();
-
-export const loadData = () => {
-  // In a real app, load from localStorage or API
-  return {
-    items: INITIAL_ITEMS,
-    stores: INITIAL_STORES,
-    purchases: INITIAL_PURCHASES
-  };
+/**
+ * Saves a new purchase to the user's Firestore collection.
+ */
+export const saveUserPurchase = async (userId: string, purchase: Purchase) => {
+  try {
+    const purchaseRef = doc(db, "users", userId, "purchases", purchase.id);
+    await setDoc(purchaseRef, purchase);
+    console.log('Saved purchase to Firestore:', purchase.id);
+  } catch (error) {
+    console.error("Error saving purchase:", error);
+  }
 };
 
-export const savePurchase = (purchase: Purchase) => {
-  // In real app, save to API
-  console.log('Saved purchase:', purchase);
+/**
+ * Updates an existing purchase in the user's Firestore collection.
+ */
+export const updateUserPurchase = async (userId: string, purchase: Purchase) => {
+  try {
+    const purchaseRef = doc(db, "users", userId, "purchases", purchase.id);
+    await setDoc(purchaseRef, purchase, { merge: true });
+    console.log('Updated purchase in Firestore:', purchase.id);
+  } catch (error) {
+    console.error("Error updating purchase:", error);
+  }
 };
