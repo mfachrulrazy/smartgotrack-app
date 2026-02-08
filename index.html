@@ -16,6 +16,20 @@
               accent: '#8B5CF6', // Violet 500
               background: '#F3F4F6', // Gray 100
               surface: '#FFFFFF',
+            },
+            animation: {
+              'fade-in': 'fadeIn 0.5s ease-out',
+              'slide-up': 'slideUp 0.5s ease-out',
+            },
+            keyframes: {
+              fadeIn: {
+                '0%': { opacity: '0' },
+                '100%': { opacity: '1' },
+              },
+              slideUp: {
+                '0%': { transform: 'translateY(20px)', opacity: '0' },
+                '100%': { transform: 'translateY(0)', opacity: '1' },
+              }
             }
           }
         }
@@ -39,11 +53,14 @@
     "react-dom/": "https://esm.sh/react-dom@^19.2.4/",
     "recharts": "https://esm.sh/recharts@^3.7.0",
     "@google/genai": "https://esm.sh/@google/genai@^1.40.0",
-    "react-router-dom": "https://esm.sh/react-router-dom@^7.13.0"
+    "react-router-dom": "https://esm.sh/react-router-dom@^7.13.0",
+    "firebase/app": "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js",
+    "firebase/auth": "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js",
+    "firebase/firestore": "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js",
+    "firebase/": "https://esm.sh/firebase@^12.9.0/"
   }
 }
 </script>
-<link rel="stylesheet" href="/index.css">
 </head>
   <body class="bg-background text-gray-800 antialiased h-screen overflow-hidden">
     <div id="root" class="h-full"></div>
